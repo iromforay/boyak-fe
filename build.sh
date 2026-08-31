@@ -34,7 +34,7 @@ TIMESTAMP="$(date '+%Y%m%d%H%M%S')"
 RELEASE_DIR="$RELEASES_DIR/$TIMESTAMP"
 mkdir -p "$RELEASE_DIR"
 
-( cd "$REPO_DIR" && BUILD_PATH="$RELEASE_DIR" npm run build )
+( cd "$REPO_DIR" && npx vite build --outDir "$RELEASE_DIR" )
 
 # 3. current 심볼릭 링크를 새 release로 무중단(원자적) 전환
 ln -sfn "releases/$TIMESTAMP" "$BUILD_ROOT/current_tmp"
