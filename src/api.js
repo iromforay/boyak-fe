@@ -22,12 +22,18 @@ export async function reanalyze({ image_path, target_id, mask_png_base64 }) {
   return res.json();
 }
 
-export async function lookupDrug({ shape, color }) {
+export async function lookupDrug({ shape, color, imprint }) {
   const res = await fetch(`${API_BASE}/drug_lookup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ shape, color }),
+    body: JSON.stringify({ shape, color, imprint }),
   });
   if (!res.ok) throw new Error((await res.json()).detail || `약 찾기 실패 (${res.status})`);
+  return res.json();
+}
+
+export async function searchDrugs(keyword) {
+  const res = await fetch(`${API_BASE}/drug_search?q=${encodeURIComponent(keyword)}`);
+  if (!res.ok) throw new Error((await res.json()).detail || `검색 실패 (${res.status})`);
   return res.json();
 }
