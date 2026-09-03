@@ -6,6 +6,30 @@ import ReviewStep from "./ReviewStep";
 import MaskingStep from "./MaskingStep";
 import ResultStep from "./ResultStep";
 
+// 등록 -> 판독(마스킹 포함) -> 결과 3단계를 항상 다 보여주고 현재 단계만
+// 강조한다 - "마스킹"은 "판독" 흐름의 연장이라 별도 단계로 세지 않는다.
+const FLOW_STEPS = ["등록", "판독", "결과"];
+function flowStepIndex(step) {
+  if (step === "upload") return 0;
+  if (step === "done") return 2;
+  return 1; // review | masking
+}
+
+function StepIndicator({ step }) {
+  const active = flowStepIndex(step);
+  return (
+    <div className="step-indicator">
+      {FLOW_STEPS.map((label, i) => (
+        <div key={label} className={`step-item ${i === active ? "active" : i < active ? "done" : ""}`}>
+          <span className="step-dot">{i < active ? "✓" : i + 1}</span>
+          <span className="step-text">{label}</span>
+          {i < FLOW_STEPS.length - 1 && <span className="step-line" />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function PhotoFlow() {
   const [step, setStep] = useState("upload"); // upload | review | masking | done
   const [error, setError] = useState("");
@@ -222,12 +246,7 @@ export default function PhotoFlow() {
 
   return (
     <>
-      <span className="step-label-row">
-        {step === "upload" && "등록"}
-        {step === "review" && "판독"}
-        {step === "masking" && "마스킹"}
-        {step === "done" && "결과"}
-      </span>
+      <StepIndicator step={step} />
 
       {error && <div className="error">{error}</div>}
 

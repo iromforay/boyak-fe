@@ -23,8 +23,13 @@ export default function SearchScreen() {
     }
   }
 
+  // 검색 전/결과 없음 상태에서는 검색창이 화면 상단에 붙어있으면 허전해
+  // 보여서 세로로 살짝 가운데에 오도록 하고, 실제 결과 목록이 있을 땐
+  // 목록이 화면을 채워야 하니 다시 상단 고정으로 되돌린다.
+  const isEmpty = results === null || results.length === 0;
+
   return (
-    <>
+    <div className={isEmpty ? "search-screen search-screen-empty" : "search-screen"}>
       {error && <div className="error">{error}</div>}
       <form className="search-bar" onSubmit={handleSearch}>
         <input
@@ -68,6 +73,6 @@ export default function SearchScreen() {
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }

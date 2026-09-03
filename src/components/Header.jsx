@@ -1,7 +1,10 @@
-export default function Header({ mode, onModeChange }) {
+export default function Header({ mode, onModeChange, onLogoClick }) {
   return (
     <header>
-      <span className="brand">보약 · 보이는 약</span>
+      <button type="button" className="brand" onClick={onLogoClick}>
+        <img src="/favicon.svg" alt="" className="brand-logo" />
+        보약 · 보이는 약
+      </button>
       <div className="mode-switch">
         <button
           type="button"

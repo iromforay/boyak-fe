@@ -76,7 +76,53 @@ header {
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 0.5px solid var(--separator-op);
 }
-.brand { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--label);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.brand:active { opacity: 0.6; }
+.brand-logo { width: 20px; height: 20px; object-fit: contain; }
+
+/* 인식 결과가 참고용이라는 법적 면책 안내 - 화면 어디서든(사진/검색 모드
+   공통) 바로 보이도록 헤더 바로 아래 항상 노출한다. */
+.disclaimer {
+  padding: 8px 16px;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--label-secondary);
+  background: var(--fill-secondary);
+  border-radius: 10px;
+  text-align: center;
+}
+.disclaimer a { color: var(--accent); text-decoration: underline; }
+.legal-footer .disclaimer { margin: 10px 0 0; }
+
+/* 앱 최하단 법적 고지 링크 - 스토어 심사/법적 요건상 약관·개인정보처리방침은
+   항상 접근 가능해야 한다. 스텝별 sticky 액션바(<footer>)와는 별개다. */
+.legal-footer {
+  margin-top: 32px;
+  padding: 16px 16px max(16px, env(safe-area-inset-bottom));
+  border-top: 0.5px solid var(--separator-op);
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--label-tertiary);
+}
+.legal-footer p { margin: 6px 0 0; line-height: 1.4; }
+.legal-footer p:first-child { margin-top: 0; }
+.legal-footer a { color: var(--label-secondary); text-decoration: none; }
+.legal-footer a:active { opacity: 0.6; }
+.legal-footer span { margin: 0 8px; }
 
 .mode-switch {
   display: flex;
@@ -103,17 +149,45 @@ header {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-.step-label-row {
-  display: block;
+/* 등록 -> 판독 -> 결과 3단계 스텝 인디케이터 - 항상 세 단계를 다 보여주고
+   현재 단계만 강조한다(마스킹은 판독 단계에 포함되어 별도 강조 없음). */
+.step-indicator {
+  display: flex;
+  align-items: center;
   margin: 14px 16px 0;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--label-secondary);
-  background: var(--fill-secondary);
-  padding: 4px 10px;
-  border-radius: 999px;
-  width: fit-content;
 }
+.step-item { display: flex; align-items: center; flex: 1; }
+.step-item:last-child { flex: none; }
+.step-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.66rem;
+  font-weight: 700;
+  background: var(--fill-secondary);
+  color: var(--label-tertiary);
+}
+.step-item.active .step-dot,
+.step-item.done .step-dot { background: var(--accent); color: #fff; }
+.step-text {
+  margin-left: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--label-tertiary);
+  white-space: nowrap;
+}
+.step-item.active .step-text { color: var(--label); }
+.step-item.done .step-text { color: var(--label-secondary); }
+.step-line { flex: 1; height: 1px; margin: 0 8px; background: var(--separator); }
+.step-item.done .step-line { background: var(--accent); opacity: 0.5; }
+
+/* 검색 전/결과 없음일 땐 검색창이 화면 위쪽에 붙어있는 게 허전해 보여서
+   세로로 살짝 가운데로 내린다. 결과 목록이 생기면 다시 상단 고정. */
+.search-screen-empty { display: flex; flex-direction: column; justify-content: center; min-height: 40vh; }
 
 .search-bar {
   display: flex;
