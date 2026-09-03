@@ -130,6 +130,7 @@ export default function PhotoFlow() {
               shape: p.shape,
               color: p.color,
               imprint: p.imprint,
+              points: p.points,
               ...lookup,
             };
           })
@@ -140,6 +141,10 @@ export default function PhotoFlow() {
           const mask_png_base64 = buildMaskDataUrl(t.id);
           const r = await reanalyze({ image_path: image.path, target_id: t.id, mask_png_base64 });
           const lookup = await lookupDrug({ shape: r.shape, color: r.color, imprint: r.imprint });
+          // 마스킹 대상은 원래 탐지된 알약(재교정)이면 원본 폴리곤이 남아있지만,
+          // "놓친 알약"으로 새로 추가한 항목은 애초에 폴리곤이 없다 - 그 경우
+          // 결과화면에서 다시 고쳐도 재학습용 raw 데이터 저장은 건너뛴다.
+          const original = pills.find((p) => p.id === t.id);
           return {
             target_id: t.id,
             source: "reanalyzed",
@@ -147,6 +152,7 @@ export default function PhotoFlow() {
             shape: r.shape,
             color: r.color,
             imprint: r.imprint,
+            points: original?.points,
             ...lookup,
           };
         })
@@ -161,16 +167,31 @@ export default function PhotoFlow() {
     }
   }
 
-  // 각인 인식 실패(빈 값)로 후보가 넓게 나온 결과에, 사용자가 직접 각인을
-  // 입력해서 다시 좁혀 찾을 수 있게 한다.
-  async function retryWithImprint(targetId, imprint) {
+  // 결과화면에서도 모양/색상/각인이 잘못 나왔을 때(=약찾기 실패의 흔한
+  // 원인) 직접 고칠 수 있게 한다 - 마스킹까지 끝난 뒤라 다시 처음부터
+  // 돌아갈 필요 없이 고친 값으로 바로 재검색한다. 원본 폴리곤(points)이
+  // 남아있는 경우에만 재학습용 raw 데이터로도 남긴다(_save_label_correction).
+  async function handleCorrectResult(targetId, field, value, label) {
     const target = results.find((r) => r.target_id === targetId);
     if (!target) return;
+    if (target.points) {
+      correctLabel({ image_path: target.image_path, target_id: targetId, points: target.points, field, value }).catch(() => {});
+    }
+    const updated = { ...target };
+    if (field === "shape") {
+      updated.shape = value;
+      updated.shape_label = label;
+    } else if (field === "color") {
+      updated.color = value;
+      updated.color_label = label;
+    } else {
+      updated.imprint = value;
+    }
     setLoading(true);
     setError("");
     try {
-      const lookup = await lookupDrug({ shape: target.shape, color: target.color, imprint });
-      setResults((prev) => prev.map((r) => (r.target_id === targetId ? { ...r, imprint, ...lookup } : r)));
+      const lookup = await lookupDrug({ shape: updated.shape, color: updated.color, imprint: updated.imprint });
+      setResults((prev) => prev.map((r) => (r.target_id === targetId ? { ...updated, ...lookup } : r)));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -263,7 +284,7 @@ export default function PhotoFlow() {
         <ResultStep
           results={results}
           loading={loading}
-          onRetryImprint={retryWithImprint}
+          onCorrectResult={handleCorrectResult}
           onConfirmDrug={confirmDrug}
           onReset={reset}
         />

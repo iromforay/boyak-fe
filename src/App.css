@@ -276,7 +276,10 @@ button.file-picker-label { width: 100%; border: none; font-family: inherit; }
   background: #000;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
-.stage canvas { display: block; width: 100%; height: auto; touch-action: none; }
+/* 세로로 긴 고해상도 사진(폰 카메라 등)이 화면을 다 차지해서 그 아래
+   판독 리스트까지 스크롤을 많이 내려야 하는 문제 - 캔버스 높이를 뷰포트
+   비율로 캡핑하고 object-fit:contain으로 잘림/왜곡 없이 축소해서 보여준다. */
+.stage canvas { display: block; width: 100%; height: auto; max-height: 52vh; object-fit: contain; touch-action: none; }
 
 .hint {
   margin: 12px 16px 0;
@@ -455,18 +458,8 @@ h2 {
 
 .imprint-retry { margin: 8px 16px 0; }
 .imprint-retry .hint { margin: 0 0 6px; }
-.imprint-retry-row { display: flex; gap: 8px; }
-.imprint-retry-row input[type="text"] {
-  flex: 1;
-  padding: 10px 13px;
-  border: none;
-  border-radius: 12px;
-  background: var(--fill-secondary);
-  color: var(--label);
-  font-size: 0.88rem;
-}
-.imprint-retry-row input[type="text"]::placeholder { color: var(--label-tertiary); }
-.imprint-retry-row input[type="text"]:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.imprint-retry .correct-inline { display: flex; width: 100%; }
+.imprint-retry .correct-inline input { flex: 1; width: auto; padding: 10px 13px; font-size: 0.88rem; }
 
 .result-group { margin-top: 18px; }
 .result-group-title {
@@ -476,6 +469,7 @@ h2 {
   color: var(--label);
 }
 .result-group-title .dim { font-weight: 500; color: var(--label-secondary); }
+.row .name.dim { color: var(--label-secondary); }
 
 .drug-row { gap: 12px; }
 .inline-action {

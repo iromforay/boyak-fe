@@ -74,8 +74,16 @@ export default function PillStage({ step, image, pills, decisions, strokes, setS
   function eventToImageXY(e) {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * canvas.width;
-    const y = ((e.clientY - rect.top) / rect.height) * canvas.height;
+    // 캔버스에 object-fit:contain을 적용해서(세로로 긴 사진 높이 캡핑) 박스
+    // 크기와 실제 그려지는 이미지 크기가 다를 수 있다 - 레터박스(여백)만큼
+    // 오프셋을 빼고 축소 비율로 나눠야 실제 픽셀 좌표가 정확히 나온다.
+    const scale = Math.min(rect.width / canvas.width, rect.height / canvas.height);
+    const displayedW = canvas.width * scale;
+    const displayedH = canvas.height * scale;
+    const offsetX = (rect.width - displayedW) / 2;
+    const offsetY = (rect.height - displayedH) / 2;
+    const x = (e.clientX - rect.left - offsetX) / scale;
+    const y = (e.clientY - rect.top - offsetY) / scale;
     return [x, y];
   }
 

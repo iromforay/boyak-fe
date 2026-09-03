@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { EditButton, ShapeSelect, ColorSelect, TextEditor } from "./LabelEditors";
 
 // pending -> confirmed -> flagged -> rejected -> confirmed -> ... (3단 순환)
 // rejected("미대상")는 오검출(실제 알약이 아닌 영역)을 표시하는 용도 -
@@ -17,105 +18,6 @@ function Confidence({ value }) {
   const pct = Math.round(value * 100);
   const level = value >= 0.9 ? "high" : value >= 0.7 ? "mid" : "low";
   return <span className={`confidence confidence-${level}`}>{pct}%</span>;
-}
-
-// DB의 drug_shape 코드값 <-> 한글 표시값 (app/services/pill_service.py의
-// _SHAPE_LABELS와 동일하게 유지 - 교정 시 코드값을 그대로 서버에 보낸다).
-const SHAPE_OPTIONS = [
-  ["round", "원형"],
-  ["oval", "타원형"],
-  ["capsule", "캡슐형"],
-  ["triangle", "삼각형"],
-  ["square", "사각형"],
-  ["diamond", "마름모형"],
-  ["pentagon", "오각형"],
-  ["hexagon", "육각형"],
-  ["semicircle", "반원형"],
-  ["oblong", "장방형"],
-  ["octagon", "팔각형"],
-  ["other", "기타"],
-];
-
-// DB의 color_class1 코드값 <-> 한글 표시값 (app/services/pill_service.py의
-// _COLOR_LABELS와 동일하게 유지 - 교정 시 코드값을 그대로 서버에 보낸다).
-const COLOR_OPTIONS = [
-  ["white", "흰색"],
-  ["ivory", "아이보리"],
-  ["yellow", "노랑"],
-  ["orange", "주황"],
-  ["pink", "분홍"],
-  ["red", "빨강"],
-  ["brown", "갈색"],
-  ["purple", "보라"],
-  ["blue", "파랑"],
-  ["green", "초록"],
-  ["gray", "회색"],
-  ["black", "검정"],
-  ["clear", "투명"],
-];
-
-function ShapeEditor({ pill, onCorrect, onClose }) {
-  return (
-    <select
-      autoFocus
-      className="correct-select"
-      defaultValue={pill.shape}
-      onClick={(e) => e.stopPropagation()}
-      onChange={(e) => {
-        const code = e.target.value;
-        const label = SHAPE_OPTIONS.find(([c]) => c === code)?.[1] || code;
-        onCorrect(pill.id, "shape", code, label);
-        onClose();
-      }}
-      onBlur={onClose}
-    >
-      {SHAPE_OPTIONS.map(([code, label]) => (
-        <option key={code} value={code}>
-          {label}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-function ColorEditor({ pill, onCorrect, onClose }) {
-  return (
-    <select
-      autoFocus
-      className="correct-select"
-      defaultValue={pill.color}
-      onClick={(e) => e.stopPropagation()}
-      onChange={(e) => {
-        const code = e.target.value;
-        const label = COLOR_OPTIONS.find(([c]) => c === code)?.[1] || code;
-        onCorrect(pill.id, "color", code, label);
-        onClose();
-      }}
-      onBlur={onClose}
-    >
-      {COLOR_OPTIONS.map(([code, label]) => (
-        <option key={code} value={code}>
-          {label}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-function ImprintEditor({ pill, onCorrect, onClose }) {
-  const [value, setValue] = useState(pill.imprint || "");
-  function submit() {
-    onCorrect(pill.id, "imprint", value.trim());
-    onClose();
-  }
-  return (
-    <span className="correct-inline" onClick={(e) => e.stopPropagation()}>
-      <input autoFocus value={value} onChange={(e) => setValue(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} />
-      <button type="button" onClick={submit}>
-        확인
-      </button>
-    </span>
-  );
 }
 
 export default function ReviewStep({ pills, decisions, setDecisions, addMissed, allDecided, hasMaskTargets, loading, onReset, onNext, onCorrect }) {
@@ -148,35 +50,29 @@ export default function ReviewStep({ pills, decisions, setDecisions, addMissed, 
               <span className="name-block">
                 <span className="name">
                   {editingShape ? (
-                    <ShapeEditor pill={p} onCorrect={onCorrect} onClose={() => setEditing(null)} />
+                    <ShapeSelect value={p.shape} onChange={(code, label) => onCorrect(p.id, "shape", code, label)} onClose={() => setEditing(null)} />
                   ) : (
                     <>
                       {p.shape_label} <Confidence value={p.shape_confidence} />
-                      <button className="edit-btn" onClick={(e) => openEditor(e, p.id, "shape")} title="모양 직접 고치기">
-                        ✎
-                      </button>
+                      <EditButton title="모양 직접 고치기" onClick={(e) => openEditor(e, p.id, "shape")} />
                     </>
                   )}
                   {" / "}
                   {editingColor ? (
-                    <ColorEditor pill={p} onCorrect={onCorrect} onClose={() => setEditing(null)} />
+                    <ColorSelect value={p.color} onChange={(code, label) => onCorrect(p.id, "color", code, label)} onClose={() => setEditing(null)} />
                   ) : (
                     <>
                       {p.color_label}
-                      <button className="edit-btn" onClick={(e) => openEditor(e, p.id, "color")} title="색상 직접 고치기">
-                        ✎
-                      </button>
+                      <EditButton title="색상 직접 고치기" onClick={(e) => openEditor(e, p.id, "color")} />
                     </>
                   )}
                 </span>
                 {editingImprint ? (
-                  <ImprintEditor pill={p} onCorrect={onCorrect} onClose={() => setEditing(null)} />
+                  <TextEditor value={p.imprint} onSubmit={(text) => onCorrect(p.id, "imprint", text)} onClose={() => setEditing(null)} />
                 ) : (
                   <span className="imprint">
                     각인 {p.imprint || "없음"} <Confidence value={p.imprint_confidence} />
-                    <button className="edit-btn" onClick={(e) => openEditor(e, p.id, "imprint")} title="각인 직접 고치기">
-                      ✎
-                    </button>
+                    <EditButton title="각인 직접 고치기" onClick={(e) => openEditor(e, p.id, "imprint")} />
                   </span>
                 )}
               </span>
