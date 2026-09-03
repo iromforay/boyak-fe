@@ -103,7 +103,6 @@ export default function PillStage({ step, image, pills, decisions, strokes, setS
         ref={imgRef}
         src={image.url}
         alt=""
-        crossOrigin="anonymous"
         style={{ display: "none" }}
         onLoad={() => setImgLoaded(true)}
       />
