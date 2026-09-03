@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { searchDrugs } from "../api";
+import { searchDrugs, imageUrl } from "../api";
 
 export default function SearchScreen() {
   const [keyword, setKeyword] = useState("");
@@ -45,31 +45,27 @@ export default function SearchScreen() {
         <p className="hint">검색 결과가 없습니다.</p>
       )}
       {results !== null && results.length > 0 && (
-        <div className="search-table-wrap">
-          <table className="search-table">
-            <thead>
-              <tr>
-                <th>약 이름</th>
-                <th>제조사</th>
-                <th>성상</th>
-                <th>분류</th>
-                <th>구분</th>
-                <th>허가일자</th>
-              </tr>
-            </thead>
-            <tbody>
-              {results.map((d) => (
-                <tr key={d.item_seq}>
-                  <td className="name-cell">{d.item_name}</td>
-                  <td>{d.entp_name}</td>
-                  <td>{d.chart}</td>
-                  <td>{d.class_name}</td>
-                  <td>{d.etc_otc_name}</td>
-                  <td>{d.item_permit_date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="drug-list">
+          {results.map((d) => (
+            <div className="drug-card" key={d.item_seq}>
+              <img
+                className="drug-thumb"
+                src={imageUrl(d.image_url)}
+                alt=""
+                loading="lazy"
+                onError={(e) => (e.target.style.visibility = "hidden")}
+              />
+              <div className="drug-info">
+                <div className="drug-name">{d.item_name}</div>
+                <div className="drug-entp">{d.entp_name}</div>
+                <div className="drug-meta">
+                  {d.chart && <span className="tag">{d.chart}</span>}
+                  {d.class_name && <span className="tag">{d.class_name}</span>}
+                  {d.etc_otc_name && <span className="tag">{d.etc_otc_name}</span>}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </>

@@ -45,7 +45,8 @@ export default function PillStage({ step, image, pills, decisions, strokes, setS
       pills.forEach((p) => {
         const pts = toPx(p.points);
         const state = decisions[p.id];
-        const color = state === "confirmed" ? "#4CAF7D" : state === "flagged" ? "#D9481F" : "#ffffffbf";
+        const color =
+          state === "confirmed" ? "#4CAF7D" : state === "flagged" ? "#D9481F" : state === "rejected" ? "#8E8E93" : "#ffffffbf";
         drawPolygon(pts, color, W * 0.006);
         labelAt(pts, String(p.id));
       });

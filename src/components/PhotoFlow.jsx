@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { imageUrl, uploadImage, reanalyze, lookupDrug } from "../api";
+import { imageUrl, uploadImage, reanalyze, lookupDrug, rejectTarget, confirmResult, correctLabel } from "../api";
 import PillStage from "./PillStage";
 import UploadStep from "./UploadStep";
 import ReviewStep from "./ReviewStep";
@@ -51,6 +51,24 @@ export default function PhotoFlow() {
     }
   }
 
+  // 판독화면에서 모양/색상/각인이 잘못 나왔을 때 사용자가 직접 고친 값 -
+  // 화면에는 즉시 반영하고(이후 약 찾기에도 그대로 쓰임), 원본 이미지+정답
+  // 라벨은 재학습용 raw 데이터로 백엔드에 남긴다(_save_label_correction).
+  // 기록 실패가 사용자 흐름을 막으면 안 되니 실패해도 조용히 무시한다.
+  function handleCorrect(pillId, field, value, label) {
+    const pill = pills.find((p) => p.id === pillId);
+    if (!pill) return;
+    correctLabel({ image_path: image.path, target_id: pillId, points: pill.points, field, value }).catch(() => {});
+    setPills((prev) =>
+      prev.map((p) => {
+        if (p.id !== pillId) return p;
+        if (field === "shape") return { ...p, shape: value, shape_label: label, shape_confidence: null };
+        if (field === "color") return { ...p, color: value, color_label: label };
+        return { ...p, imprint: value, imprint_confidence: null };
+      })
+    );
+  }
+
   function addMissed() {
     const n = missedItems.length + 1;
     setMissedItems((prev) => [...prev, { id: `missed-${n}`, label: `놓친 알약 ${n}` }]);
@@ -89,12 +107,31 @@ export default function PhotoFlow() {
     setLoading(true);
     setError("");
     try {
+      // 미대상(오탐)으로 표시한 항목은 검출 단계 재학습용 음성 예제로 기록만
+      // 남기고 최종 결과에는 포함하지 않는다. 기록 실패가 사용자 흐름을
+      // 막으면 안 되니 실패해도 조용히 무시한다.
+      pills
+        .filter((p) => decisions[p.id] === "rejected")
+        .forEach((p) => {
+          rejectTarget({ image_path: image.path, target_id: p.id, shape: p.shape, color: p.color, points: p.points }).catch(
+            () => {}
+          );
+        });
+
       const confirmedResults = await Promise.all(
         pills
           .filter((p) => decisions[p.id] === "confirmed")
           .map(async (p) => {
             const lookup = await lookupDrug({ shape: p.shape, color: p.color, imprint: p.imprint });
-            return { target_id: p.id, source: "confirmed", ...lookup };
+            return {
+              target_id: p.id,
+              source: "confirmed",
+              image_path: image.path,
+              shape: p.shape,
+              color: p.color,
+              imprint: p.imprint,
+              ...lookup,
+            };
           })
       );
 
@@ -103,7 +140,15 @@ export default function PhotoFlow() {
           const mask_png_base64 = buildMaskDataUrl(t.id);
           const r = await reanalyze({ image_path: image.path, target_id: t.id, mask_png_base64 });
           const lookup = await lookupDrug({ shape: r.shape, color: r.color, imprint: r.imprint });
-          return { target_id: t.id, source: "reanalyzed", ...lookup };
+          return {
+            target_id: t.id,
+            source: "reanalyzed",
+            image_path: image.path,
+            shape: r.shape,
+            color: r.color,
+            imprint: r.imprint,
+            ...lookup,
+          };
         })
       );
 
@@ -114,6 +159,31 @@ export default function PhotoFlow() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // 각인 인식 실패(빈 값)로 후보가 넓게 나온 결과에, 사용자가 직접 각인을
+  // 입력해서 다시 좁혀 찾을 수 있게 한다.
+  async function retryWithImprint(targetId, imprint) {
+    const target = results.find((r) => r.target_id === targetId);
+    if (!target) return;
+    setLoading(true);
+    setError("");
+    try {
+      const lookup = await lookupDrug({ shape: target.shape, color: target.color, imprint });
+      setResults((prev) => prev.map((r) => (r.target_id === targetId ? { ...r, imprint, ...lookup } : r)));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // 결과화면에서 "이 약이 맞다" 확정 - 모양 분류기 학습용 정답 라벨을 남긴다.
+  // 기록 실패가 사용자 흐름을 막으면 안 되니 실패해도 조용히 무시한다.
+  function confirmDrug(targetId, itemSeq) {
+    const target = results.find((r) => r.target_id === targetId);
+    if (!target) return;
+    confirmResult({ image_path: target.image_path, target_id: targetId, item_seq: itemSeq }).catch(() => {});
   }
 
   function reset() {
@@ -168,6 +238,7 @@ export default function PhotoFlow() {
               loading={loading}
               onReset={reset}
               onNext={goToMaskingOrSubmit}
+              onCorrect={handleCorrect}
             />
           )}
 
@@ -188,7 +259,15 @@ export default function PhotoFlow() {
         </>
       )}
 
-      {step === "done" && <ResultStep results={results} onReset={reset} />}
+      {step === "done" && (
+        <ResultStep
+          results={results}
+          loading={loading}
+          onRetryImprint={retryWithImprint}
+          onConfirmDrug={confirmDrug}
+          onReset={reset}
+        />
+      )}
     </>
   );
 }
