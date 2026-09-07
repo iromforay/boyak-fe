@@ -4,6 +4,7 @@ import SearchScreen from "./components/SearchScreen";
 import PhotoFlow from "./components/PhotoFlow";
 import SignupModal from "./components/SignupModal";
 import SettingsMenu from "./components/SettingsMenu";
+import Footer from "./components/Footer";
 import TutorialOverlay from "./components/TutorialOverlay";
 import { TUTORIAL_STEPS } from "./tutorialSteps";
 import { useUser } from "./useUser";
@@ -81,14 +82,7 @@ export default function App() {
           onSkip={finishTutorial}
         />
       )}
-      <div className="legal-footer">
-        <p>
-          <a href="/terms.html">이용약관</a>
-          <span aria-hidden="true">·</span>
-          <a href="/privacy.html">개인정보처리방침</a>
-        </p>
-        <p>이롬 · 대표 나병연 · 사업자등록번호 257-38-01646</p>
-      </div>
+      <Footer />
     </div>
   );
 }

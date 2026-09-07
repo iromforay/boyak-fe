@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  보이는 시리즈 패밀리 앱 목록.
+
+  이 파일은 빌드에 포함되지 않는 정적 파일이라(public/ 그대로 서빙),
+  앱이 추가/변경될 때 이 파일만 서버에 교체하면 된다 - 프론트를 다시
+  빌드/배포할 필요 없음. <app> 항목을 추가/삭제/수정만 하면 푸터의
+  패밀리 사이트 선택창에 바로 반영된다.
+
+  아직 다른 앱이 없어 보약 자신을 예시로 하나만 넣어뒀다. storeUrl은
+  실제 플레이스토어 등록 후 정확한 주소로 교체할 것.
+-->
+<familyApps>
+  <app>
+    <name>보약 · 보이는 약</name>
+    <storeUrl>https://play.google.com/store/apps/details?id=com.erom.boyak</storeUrl>
+  </app>
+</familyApps>

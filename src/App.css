@@ -127,6 +127,16 @@ header {
 .legal-footer a { color: var(--label-secondary); text-decoration: none; }
 .legal-footer a:active { opacity: 0.6; }
 .legal-footer span { margin: 0 8px; }
+.family-sites {
+  margin-top: 10px;
+  padding: 6px 10px;
+  border: 0.5px solid var(--separator-op);
+  border-radius: 8px;
+  background: var(--fill-secondary);
+  color: var(--label-secondary);
+  font-size: 0.72rem;
+  text-align: center;
+}
 
 .mode-switch {
   display: flex;
@@ -441,14 +451,14 @@ button.file-picker-label { width: 100%; border: none; font-family: inherit; }
 .edit-btn {
   border: none;
   background: none;
-  color: var(--label-tertiary);
+  color: var(--accent);
   font-size: 0.75rem;
   margin-left: 4px;
   padding: 2px 4px;
   cursor: pointer;
   line-height: 1;
 }
-.edit-btn:hover { color: var(--accent); }
+.edit-btn:active { opacity: 0.6; }
 .correct-select {
   font-size: 0.85rem;
   padding: 2px 6px;
