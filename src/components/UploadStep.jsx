@@ -104,7 +104,7 @@ export default function UploadStep({ loading, fileName, onFileChange, onSubmit }
       <h1>알약 사진 등록</h1>
       <p className="card-sub">알약이 잘 보이도록 찍은 사진을 올려주세요.</p>
       <div className="file-picker">
-        <label className="file-picker-label" htmlFor="image">
+        <label className="file-picker-label" htmlFor="image" data-tutorial={fileName ? undefined : "upload-pick"}>
           {fileName ? "다른 사진 선택" : "사진 선택"}
         </label>
         {appMode && (
@@ -118,7 +118,12 @@ export default function UploadStep({ loading, fileName, onFileChange, onSubmit }
       </div>
       <div className="submit-wrap">
         {toast && <span className="toast">{toast}</span>}
-        <button type="submit" className={!fileName ? "is-disabled" : ""} disabled={loading || optimizing}>
+        <button
+          type="submit"
+          className={!fileName ? "is-disabled" : ""}
+          disabled={loading || optimizing}
+          data-tutorial={fileName ? "analyze-start" : undefined}
+        >
           {loading ? "분석 중..." : optimizing ? "이미지 최적화 중..." : "분석 시작"}
         </button>
       </div>

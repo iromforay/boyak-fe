@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { SHAPE_OPTIONS, COLOR_OPTIONS, labelFor } from "../labelOptions";
+import ShapePicker from "./ShapePicker";
+import ColorPicker from "./ColorPicker";
 
 // 판독/결과 화면 공통 - 모양/색상/각인을 언제든 직접 고칠 수 있는 연필 버튼.
-export function EditButton({ onClick, title }) {
+export function EditButton({ onClick, title, dataTutorial }) {
   return (
     <button
       className="edit-btn"
@@ -11,55 +12,30 @@ export function EditButton({ onClick, title }) {
         onClick(e);
       }}
       title={title}
+      data-tutorial={dataTutorial}
     >
       ✎
     </button>
   );
 }
 
+// 텍스트 드롭다운 대신 모양 실루엣 아이콘 그리드(ShapePicker)를 모달로 띄운다 -
+// 호출부(ReviewStep/ResultStep)는 그대로 두고 내부 구현만 바꿨다.
 export function ShapeSelect({ value, onChange, onClose }) {
   return (
-    <select
-      autoFocus
-      className="correct-select"
-      defaultValue={value}
-      onClick={(e) => e.stopPropagation()}
-      onChange={(e) => {
-        const code = e.target.value;
-        onChange(code, labelFor(SHAPE_OPTIONS, code));
-        onClose();
-      }}
-      onBlur={onClose}
-    >
-      {SHAPE_OPTIONS.map(([code, label]) => (
-        <option key={code} value={code}>
-          {label}
-        </option>
-      ))}
-    </select>
+    <span onClick={(e) => e.stopPropagation()}>
+      <ShapePicker value={value} onChange={onChange} onClose={onClose} />
+    </span>
   );
 }
 
+// 모양 선택과 통일감을 맞추기 위해 텍스트 드롭다운 대신 색상 스와치
+// 그리드(ColorPicker)를 모달로 띄운다.
 export function ColorSelect({ value, onChange, onClose }) {
   return (
-    <select
-      autoFocus
-      className="correct-select"
-      defaultValue={value}
-      onClick={(e) => e.stopPropagation()}
-      onChange={(e) => {
-        const code = e.target.value;
-        onChange(code, labelFor(COLOR_OPTIONS, code));
-        onClose();
-      }}
-      onBlur={onClose}
-    >
-      {COLOR_OPTIONS.map(([code, label]) => (
-        <option key={code} value={code}>
-          {label}
-        </option>
-      ))}
-    </select>
+    <span onClick={(e) => e.stopPropagation()}>
+      <ColorPicker value={value} onChange={onChange} onClose={onClose} />
+    </span>
   );
 }
 

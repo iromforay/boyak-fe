@@ -39,13 +39,18 @@ export default function ReviewStep({ pills, decisions, setDecisions, addMissed, 
         나왔다면 <b>✎</b>로 직접 고칠 수 있습니다.
       </p>
       <div className="list">
-        {pills.map((p) => {
+        {pills.map((p, idx) => {
           const state = decisions[p.id] || "pending";
           const editingShape = editing?.id === p.id && editing.field === "shape";
           const editingColor = editing?.id === p.id && editing.field === "color";
           const editingImprint = editing?.id === p.id && editing.field === "imprint";
           return (
-            <div key={p.id} className={`row ${state}`} onClick={() => cycle(p.id)}>
+            <div
+              key={p.id}
+              className={`row ${state}`}
+              onClick={() => cycle(p.id)}
+              data-tutorial={idx === 0 ? "decision-row" : undefined}
+            >
               <span className="idx">알약 {p.id}</span>
               <span className="name-block">
                 <span className="name">
@@ -54,7 +59,11 @@ export default function ReviewStep({ pills, decisions, setDecisions, addMissed, 
                   ) : (
                     <>
                       {p.shape_label} <Confidence value={p.shape_confidence} />
-                      <EditButton title="모양 직접 고치기" onClick={(e) => openEditor(e, p.id, "shape")} />
+                      <EditButton
+                        title="모양 직접 고치기"
+                        onClick={(e) => openEditor(e, p.id, "shape")}
+                        dataTutorial={idx === 0 ? "shape-edit" : undefined}
+                      />
                     </>
                   )}
                   {" / "}
@@ -63,7 +72,11 @@ export default function ReviewStep({ pills, decisions, setDecisions, addMissed, 
                   ) : (
                     <>
                       {p.color_label}
-                      <EditButton title="색상 직접 고치기" onClick={(e) => openEditor(e, p.id, "color")} />
+                      <EditButton
+                        title="색상 직접 고치기"
+                        onClick={(e) => openEditor(e, p.id, "color")}
+                        dataTutorial={idx === 0 ? "color-edit" : undefined}
+                      />
                     </>
                   )}
                 </span>
@@ -72,7 +85,11 @@ export default function ReviewStep({ pills, decisions, setDecisions, addMissed, 
                 ) : (
                   <span className="imprint">
                     각인 {p.imprint || "없음"} <Confidence value={p.imprint_confidence} />
-                    <EditButton title="각인 직접 고치기" onClick={(e) => openEditor(e, p.id, "imprint")} />
+                    <EditButton
+                      title="각인 직접 고치기"
+                      onClick={(e) => openEditor(e, p.id, "imprint")}
+                      dataTutorial={idx === 0 ? "imprint-edit" : undefined}
+                    />
                   </span>
                 )}
               </span>

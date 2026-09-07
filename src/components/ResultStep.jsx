@@ -36,7 +36,7 @@ export default function ResultStep({ results, loading, onCorrectResult, onConfir
   return (
     <>
       <h2>약 찾기 결과</h2>
-      {results.map((r) => {
+      {results.map((r, ri) => {
         const confirmedSeq = confirmedMap[r.target_id];
         const noMatch = noMatchMap[r.target_id];
         const editingShape = editing?.targetId === r.target_id && editing.field === "shape";
@@ -96,7 +96,7 @@ export default function ResultStep({ results, loading, onCorrectResult, onConfir
                   <span className="name">일치하는 약을 찾지 못했습니다.</span>
                 </div>
               )}
-              {r.drugs.map((d) => (
+              {r.drugs.map((d, di) => (
                 <div key={d.item_seq} className="row drug-row">
                   <img className="drug-thumb" src={imageUrl(d.image_url)} alt="" loading="lazy" />
                   <span className="name-block">
@@ -106,7 +106,11 @@ export default function ResultStep({ results, loading, onCorrectResult, onConfir
                   {confirmedSeq === d.item_seq ? (
                     <span className="status confirmed">확정됨</span>
                   ) : (
-                    <button className="inline-action" onClick={() => handleConfirm(r.target_id, d.item_seq)}>
+                    <button
+                      className="inline-action"
+                      onClick={() => handleConfirm(r.target_id, d.item_seq)}
+                      data-tutorial={ri === 0 && di === 0 ? "confirm-drug" : undefined}
+                    >
                       이 약이 맞다
                     </button>
                   )}
