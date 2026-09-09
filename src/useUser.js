@@ -30,13 +30,26 @@ export function useUser() {
 
   useEffect(() => {
     let cancelled = false;
-    getUser(uuid)
-      .then((u) => {
+
+    // 404(진짜 미가입)와 그 외 오류(DB 연결이 잠깐 끊기는 등 서버 쪽 일시
+    // 오류)를 구분해야 한다 - 안 그러면 서버가 잠깐 흔들릴 때 이미 가입된
+    // 사용자에게까지 가입 화면을 다시 띄워버린다. 일시 오류는 몇 번 재시도만
+    // 하고, 그래도 안 되면 조용히 포기한다(다음 접속 때 다시 시도됨).
+    async function load(attempt = 0) {
+      try {
+        const u = await getUser(uuid);
         if (!cancelled) setUser(u);
-      })
-      .catch(() => {
-        if (!cancelled) setNeedsSignup(true);
-      });
+      } catch (err) {
+        if (cancelled) return;
+        if (err.status === 404) {
+          setNeedsSignup(true);
+        } else if (attempt < 2) {
+          setTimeout(() => load(attempt + 1), 1500);
+        }
+      }
+    }
+
+    load();
     return () => {
       cancelled = true;
     };

@@ -80,7 +80,21 @@ export async function signup({ uuid, name, age, platform }) {
 
 export async function getUser(uuid) {
   const res = await fetch(`${API_BASE}/users/${uuid}`);
-  if (!res.ok) throw new Error((await res.json()).detail || `조회 실패 (${res.status})`);
+  if (!res.ok) {
+    // status를 실어 보낸다 - 호출부(useUser)가 "진짜 미가입(404)"과
+    // "서버가 잠깐 흔들림(503 등)"을 구분해서 후자엔 가입 화면을 잘못
+    // 띄우지 않게 해야 한다.
+    const err = new Error((await res.json()).detail || `조회 실패 (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
+export async function checkAppVersion({ version_code, platform }) {
+  const params = new URLSearchParams({ version_code, platform });
+  const res = await fetch(`${API_BASE}/app_version_check?${params}`);
+  if (!res.ok) throw new Error((await res.json()).detail || `버전 확인 실패 (${res.status})`);
   return res.json();
 }
 
